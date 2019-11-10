@@ -604,7 +604,7 @@ public class Graph
     {
         for (int i = 0; i < nodes.Count; i++)
         {
-            if(Mathf.Abs(ghost.transform.position.x - ((Node)nodes[i]).positionX) < 0.1 && Mathf.Abs(ghost.transform.position.y - ((Node)nodes[i]).positionY) < 0.1)
+            if(Mathf.Abs(ghost.transform.position.x - ((Node)nodes[i]).positionX) < 0.05 && Mathf.Abs(ghost.transform.position.y - ((Node)nodes[i]).positionY) < 0.05)
             {
                 return true;
             }

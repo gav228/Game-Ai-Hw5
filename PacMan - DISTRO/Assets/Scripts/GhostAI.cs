@@ -91,6 +91,7 @@ public class GhostAI : MonoBehaviour {
 	public GameObject target;
 	GameObject gate;
 	GameObject pacMan;
+    GameObject blinky;
 
 	public bool chooseDirection = true;
 	public int[] choices ;
@@ -118,6 +119,7 @@ public class GhostAI : MonoBehaviour {
 		move = GetComponent<Movement> ();
 		gate = GameObject.Find("Gate(Clone)");
 		pacMan = GameObject.Find("PacMan(Clone)") ? GameObject.Find("PacMan(Clone)") : GameObject.Find("PacMan 1(Clone)");
+        blinky = GameObject.Find("Blinky(Clone)");
 		releaseTimeReset = releaseTime;
         recalculate = 0;
 	}
@@ -199,19 +201,19 @@ public class GhostAI : MonoBehaviour {
                     {
                         if (pacMan.GetComponent<Movement>()._dir == Movement.Direction.up)
                         {
-                            move._dir = move.pathFind(transform, pacMan.transform.position.x, pacMan.transform.position.y + 5);
+                            move._dir = move.pathFind(transform, pacMan.transform.position.x, pacMan.transform.position.y + 4);
                         }
                         if (pacMan.GetComponent<Movement>()._dir == Movement.Direction.left)
                         {
-                            move._dir = move.pathFind(transform, pacMan.transform.position.x - 5, pacMan.transform.position.y);
+                            move._dir = move.pathFind(transform, pacMan.transform.position.x - 4, pacMan.transform.position.y);
                         }
                         if (pacMan.GetComponent<Movement>()._dir == Movement.Direction.right)
                         {
-                            move._dir = move.pathFind(transform, pacMan.transform.position.x + 5, pacMan.transform.position.y);
+                            move._dir = move.pathFind(transform, pacMan.transform.position.x + 4, pacMan.transform.position.y);
                         }
                         if (pacMan.GetComponent<Movement>()._dir == Movement.Direction.down)
                         {
-                            move._dir = move.pathFind(transform, pacMan.transform.position.x, pacMan.transform.position.y - 5);
+                            move._dir = move.pathFind(transform, pacMan.transform.position.x, pacMan.transform.position.y - 4);
                         }
                     }
                     else
@@ -220,34 +222,74 @@ public class GhostAI : MonoBehaviour {
                         {
                             if (pacMan.GetComponent<Movement>()._dir == Movement.Direction.up)
                             {
-                                move._dir = move.pathFind(transform, pacMan.transform.position.x, pacMan.transform.position.y + 5);
+                                move._dir = move.pathFind(transform, pacMan.transform.position.x, pacMan.transform.position.y + 4);
                             }
                             if (pacMan.GetComponent<Movement>()._dir == Movement.Direction.left)
                             {
-                                move._dir = move.pathFind(transform, pacMan.transform.position.x - 5, pacMan.transform.position.y);
+                                move._dir = move.pathFind(transform, pacMan.transform.position.x - 4, pacMan.transform.position.y);
                             }
                             if (pacMan.GetComponent<Movement>()._dir == Movement.Direction.right)
                             {
-                                move._dir = move.pathFind(transform, pacMan.transform.position.x + 5, pacMan.transform.position.y);
+                                move._dir = move.pathFind(transform, pacMan.transform.position.x + 4, pacMan.transform.position.y);
                             }
                             if (pacMan.GetComponent<Movement>()._dir == Movement.Direction.down)
                             {
-                                move._dir = move.pathFind(transform, pacMan.transform.position.x, pacMan.transform.position.y - 5);
+                                move._dir = move.pathFind(transform, pacMan.transform.position.x, pacMan.transform.position.y - 4);
                             }
                         }
 
                     }
                    
                 }
-                // Inky behavior
+                // Inky behavior (double vector between blinky and pacman)
                 if (ghostID == 3)
                 {
-
+                    if (move._dir == Movement.Direction.still)
+                    {
+                        if (pacMan.GetComponent<Movement>()._dir == Movement.Direction.up)
+                        {
+                            move._dir = move.pathFind(transform, (pacMan.transform.position.x - blinky.transform.position.x) * 2, (pacMan.transform.position.y + 4 - blinky.transform.position.y) * 2);
+                        }
+                        if (pacMan.GetComponent<Movement>()._dir == Movement.Direction.left)
+                        {
+                            move._dir = move.pathFind(transform, (pacMan.transform.position.x - 4 - blinky.transform.position.x) * 2, (pacMan.transform.position.y - blinky.transform.position.y) * 2);
+                        }
+                        if (pacMan.GetComponent<Movement>()._dir == Movement.Direction.right)
+                        {
+                            move._dir = move.pathFind(transform, (pacMan.transform.position.x + 4 - blinky.transform.position.x) * 2, (pacMan.transform.position.y - blinky.transform.position.y) * 2);
+                        }
+                        if (pacMan.GetComponent<Movement>()._dir == Movement.Direction.down)
+                        {
+                            move._dir = move.pathFind(transform, (pacMan.transform.position.x - blinky.transform.position.x) * 2, (pacMan.transform.position.y - 4 - blinky.transform.position.y) * 2);
+                        }
+                    }
+                    else
+                    {
+                        if (move.graph.onNode(transform))
+                        {
+                            if (pacMan.GetComponent<Movement>()._dir == Movement.Direction.up)
+                            {
+                                move._dir = move.pathFind(transform, (pacMan.transform.position.x - blinky.transform.position.x) * 2, (pacMan.transform.position.y + 4 - blinky.transform.position.y) * 2);
+                            }
+                            if (pacMan.GetComponent<Movement>()._dir == Movement.Direction.left)
+                            {
+                                move._dir = move.pathFind(transform, (pacMan.transform.position.x - 4 - blinky.transform.position.x) * 2, (pacMan.transform.position.y - blinky.transform.position.y) * 2);
+                            }
+                            if (pacMan.GetComponent<Movement>()._dir == Movement.Direction.right)
+                            {
+                                move._dir = move.pathFind(transform, (pacMan.transform.position.x + 4 - blinky.transform.position.x) * 2, (pacMan.transform.position.y - blinky.transform.position.y) * 2);
+                            }
+                            if (pacMan.GetComponent<Movement>()._dir == Movement.Direction.down)
+                            {
+                                move._dir = move.pathFind(transform, (pacMan.transform.position.x - blinky.transform.position.x) * 2, (pacMan.transform.position.y - 4 - blinky.transform.position.y) * 2);
+                            }
+                        }
+                    }
                 }
-                // Clide behavior ()
+                // Clide behavior (run at pacman, then run to the bottom of the screen)
                 if (ghostID == 4)
                 {
-                    if (Vector3.Distance(transform.position, pacMan.transform.position)>4) {
+                    if (Vector3.Distance(transform.position, pacMan.transform.position)>8) {
                         if (move._dir == Movement.Direction.still)
                         {
                             move._dir = move.pathFind(transform, pacMan.transform.position.x, pacMan.transform.position.y);
@@ -263,7 +305,19 @@ public class GhostAI : MonoBehaviour {
                         }
                     } else
                     {
-                        move._dir = move.pathFind(transform, 1, -29);
+                        if (move._dir == Movement.Direction.still)
+                        {
+                            move._dir = move.pathFind(transform, 1, -29);
+                        }
+                        else
+                        {
+                            if (move.graph.onNode(transform))
+                            {
+                                move._dir = move.pathFind(transform, 1, -29);
+                                recalculate = 0;
+                            }
+
+                        }
                     }
                 }
 
