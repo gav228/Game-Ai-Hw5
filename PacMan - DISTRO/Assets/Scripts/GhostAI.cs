@@ -109,6 +109,7 @@ public class GhostAI : MonoBehaviour {
 
 	public State _state = State.waiting;
 
+    private bool firstWait = true;
     // Use this for initialization
     private void Awake()
     {
@@ -128,224 +129,524 @@ public class GhostAI : MonoBehaviour {
 		releaseTime = releaseTimeReset;
 		transform.position = startPos;
 		_state = State.waiting;
-	}
-	
+        firstWait = true;
+    }
+
     /// <summary>
     /// This is where most of the work will be done. A switch/case statement is probably 
     /// the first thing to test for. There can be additional tests for specific ghosts,
     /// controlled by the GhostID variable. But much of the variations in ghost behavior
     /// could be controlled by changing values of some of the above variables, like
+    ///
+    /// NOTE TO USER: 
+    /// 
+    /// If you want to change from original (default) to custom, then go on the ghost prefab and change the ghostmode between 1 == original and 2 == custom 
+    /// 
     /// 
     /// </summary>
-	void Update () {
-		switch (_state) {
-		case(State.waiting):
+    void Update() {
+        switch (ghostMode) {
+            case (ORIGINAL):
+                switch (_state) {
+                    case (State.waiting):
 
-            // below is some sample code showing how you deal with animations, etc.
-			move._dir = Movement.Direction.still;
-			if (releaseTime <= 0f) {
-				chooseDirection = true;
-				gameObject.GetComponent<Animator>().SetBool("Dead", false);
-				gameObject.GetComponent<Animator>().SetBool("Running", false);
-				gameObject.GetComponent<Animator>().SetInteger ("Direction", 0);
-				gameObject.GetComponent<Movement> ().MSpeed = 5f;
+                        // below is some sample code showing how you deal with animations, etc.
+                        move._dir = Movement.Direction.still;
+                        if (releaseTime <= 0f) {
+                            gameObject.GetComponent<Animator>().SetBool("Dead", false);
+                            gameObject.GetComponent<Animator>().SetBool("Running", false);
+                            gameObject.GetComponent<Animator>().SetInteger("Direction", 0);
+                            gameObject.GetComponent<Movement>().MSpeed = 5f;
+                            _state = State.leaving;
 
-				_state = State.leaving;
-
-                // etc.
-			}
-			gameObject.GetComponent<Animator>().SetBool("Dead", false);
-			gameObject.GetComponent<Animator>().SetBool("Running", false);
-			gameObject.GetComponent<Animator>().SetInteger ("Direction", 0);
-			gameObject.GetComponent<Movement> ().MSpeed = 5f;
-			releaseTime -= Time.deltaTime;
-            // etc.
-			break;
-
-
-		case(State.leaving):
-             transform.position = new Vector3(13.5f, -11f, 2f);
-                _state = State.active;
-
-                break;
-
-		case(State.active):
-                if (dead) {
-
-                    // etc.
-                    // most of your AI code will be placed here
-                    _state = State.entering;
-                }
-                // Blinky Behavior (Chase the player)
-                if (ghostID == 1)
-                {
-                    if (move._dir == Movement.Direction.still)
-                    {
-                        move._dir = move.pathFind(transform, pacMan.transform.position.x, pacMan.transform.position.y);
-                    }
-                    else
-                    {
-                        if (move.graph.onNode(transform))
-                        {
-                            move._dir = move.pathFind(transform, pacMan.transform.position.x, pacMan.transform.position.y);
-                            recalculate = 0;
+                            // etc.
                         }
 
-                    }
-                }
+                        releaseTime -= Time.deltaTime;
+                        // etc.
+                        break;
 
-                // Pinky Behavior (Look in front of player)
-                if(ghostID == 2)
-                {
-                    if (move._dir == Movement.Direction.still)
-                    {
-                        if (pacMan.GetComponent<Movement>()._dir == Movement.Direction.up)
-                        {
-                            move._dir = move.pathFind(transform, pacMan.transform.position.x, pacMan.transform.position.y + 4);
-                        }
-                        if (pacMan.GetComponent<Movement>()._dir == Movement.Direction.left)
-                        {
-                            move._dir = move.pathFind(transform, pacMan.transform.position.x - 4, pacMan.transform.position.y);
-                        }
-                        if (pacMan.GetComponent<Movement>()._dir == Movement.Direction.right)
-                        {
-                            move._dir = move.pathFind(transform, pacMan.transform.position.x + 4, pacMan.transform.position.y);
-                        }
-                        if (pacMan.GetComponent<Movement>()._dir == Movement.Direction.down)
-                        {
-                            move._dir = move.pathFind(transform, pacMan.transform.position.x, pacMan.transform.position.y - 4);
-                        }
-                    }
-                    else
-                    {
-                        if (move.graph.onNode(transform))
-                        {
-                            if (pacMan.GetComponent<Movement>()._dir == Movement.Direction.up)
-                            {
-                                move._dir = move.pathFind(transform, pacMan.transform.position.x, pacMan.transform.position.y + 4);
-                            }
-                            if (pacMan.GetComponent<Movement>()._dir == Movement.Direction.left)
-                            {
-                                move._dir = move.pathFind(transform, pacMan.transform.position.x - 4, pacMan.transform.position.y);
-                            }
-                            if (pacMan.GetComponent<Movement>()._dir == Movement.Direction.right)
-                            {
-                                move._dir = move.pathFind(transform, pacMan.transform.position.x + 4, pacMan.transform.position.y);
-                            }
-                            if (pacMan.GetComponent<Movement>()._dir == Movement.Direction.down)
-                            {
-                                move._dir = move.pathFind(transform, pacMan.transform.position.x, pacMan.transform.position.y - 4);
-                            }
-                        }
 
-                    }
-                   
-                }
-                // Inky behavior (double vector between blinky and pacman)
-                if (ghostID == 3)
-                {
-                    if (move._dir == Movement.Direction.still)
-                    {
-                        if (pacMan.GetComponent<Movement>()._dir == Movement.Direction.up)
-                        {
-                            move._dir = move.pathFind(transform, (pacMan.transform.position.x - blinky.transform.position.x) * 2, (pacMan.transform.position.y + 4 - blinky.transform.position.y) * 2);
+                    case (State.leaving):
+                        transform.position = new Vector3(13.5f, -11f, 2f);
+                        _state = State.active;
+
+                        break;
+
+                    case (State.active):
+                        if (dead) {
+
+                            // etc.
+                            // most of your AI code will be placed here
+                            _state = State.entering;
                         }
-                        if (pacMan.GetComponent<Movement>()._dir == Movement.Direction.left)
+                        if (pacMan.gameObject == null)
                         {
-                            move._dir = move.pathFind(transform, (pacMan.transform.position.x - 4 - blinky.transform.position.x) * 2, (pacMan.transform.position.y - blinky.transform.position.y) * 2);
+                            pacMan = GameObject.Find("PacMan(Clone)") ? GameObject.Find("PacMan(Clone)") : GameObject.Find("PacMan 1(Clone)");
                         }
-                        if (pacMan.GetComponent<Movement>()._dir == Movement.Direction.right)
+                        if (blinky.gameObject == null)
                         {
-                            move._dir = move.pathFind(transform, (pacMan.transform.position.x + 4 - blinky.transform.position.x) * 2, (pacMan.transform.position.y - blinky.transform.position.y) * 2);
+                            blinky = GameObject.Find("Blinky(Clone)");
                         }
-                        if (pacMan.GetComponent<Movement>()._dir == Movement.Direction.down)
+                        // Blinky Behavior (Chase the player)
+                        if (ghostID == 1)
                         {
-                            move._dir = move.pathFind(transform, (pacMan.transform.position.x - blinky.transform.position.x) * 2, (pacMan.transform.position.y - 4 - blinky.transform.position.y) * 2);
-                        }
-                    }
-                    else
-                    {
-                        if (move.graph.onNode(transform))
-                        {
-                            if (pacMan.GetComponent<Movement>()._dir == Movement.Direction.up)
-                            {
-                                move._dir = move.pathFind(transform, (pacMan.transform.position.x - blinky.transform.position.x) * 2, (pacMan.transform.position.y + 4 - blinky.transform.position.y) * 2);
-                            }
-                            if (pacMan.GetComponent<Movement>()._dir == Movement.Direction.left)
-                            {
-                                move._dir = move.pathFind(transform, (pacMan.transform.position.x - 4 - blinky.transform.position.x) * 2, (pacMan.transform.position.y - blinky.transform.position.y) * 2);
-                            }
-                            if (pacMan.GetComponent<Movement>()._dir == Movement.Direction.right)
-                            {
-                                move._dir = move.pathFind(transform, (pacMan.transform.position.x + 4 - blinky.transform.position.x) * 2, (pacMan.transform.position.y - blinky.transform.position.y) * 2);
-                            }
-                            if (pacMan.GetComponent<Movement>()._dir == Movement.Direction.down)
-                            {
-                                move._dir = move.pathFind(transform, (pacMan.transform.position.x - blinky.transform.position.x) * 2, (pacMan.transform.position.y - 4 - blinky.transform.position.y) * 2);
-                            }
-                        }
-                    }
-                }
-                // Clide behavior (run at pacman, then run to the bottom of the screen)
-                if (ghostID == 4)
-                {
-                    if (Vector3.Distance(transform.position, pacMan.transform.position)>8) {
-                        if (move._dir == Movement.Direction.still)
-                        {
-                            move._dir = move.pathFind(transform, pacMan.transform.position.x, pacMan.transform.position.y);
-                        }
-                        else
-                        {
-                            if (move.graph.onNode(transform))
+                            if (move._dir == Movement.Direction.still)
                             {
                                 move._dir = move.pathFind(transform, pacMan.transform.position.x, pacMan.transform.position.y);
-                                recalculate = 0;
+                            }
+                            else
+                            {
+                                if (move.graph.onNode(transform))
+                                {
+                                    move._dir = move.pathFind(transform, pacMan.transform.position.x, pacMan.transform.position.y);
+                                    recalculate = 0;
+                                }
+
+                            }
+                        }
+
+                        // Pinky Behavior (Look in front of player)
+                        if (ghostID == 2)
+                        {
+                            if (move._dir == Movement.Direction.still)
+                            {
+                                if (pacMan.GetComponent<Movement>()._dir == Movement.Direction.up)
+                                {
+                                    move._dir = move.pathFind(transform, pacMan.transform.position.x, pacMan.transform.position.y + 4);
+                                }
+                                if (pacMan.GetComponent<Movement>()._dir == Movement.Direction.left)
+                                {
+                                    move._dir = move.pathFind(transform, pacMan.transform.position.x - 4, pacMan.transform.position.y);
+                                }
+                                if (pacMan.GetComponent<Movement>()._dir == Movement.Direction.right)
+                                {
+                                    move._dir = move.pathFind(transform, pacMan.transform.position.x + 4, pacMan.transform.position.y);
+                                }
+                                if (pacMan.GetComponent<Movement>()._dir == Movement.Direction.down)
+                                {
+                                    move._dir = move.pathFind(transform, pacMan.transform.position.x, pacMan.transform.position.y - 4);
+                                }
+                            }
+                            else
+                            {
+                                if (move.graph.onNode(transform))
+                                {
+                                    if (pacMan.GetComponent<Movement>()._dir == Movement.Direction.up)
+                                    {
+                                        move._dir = move.pathFind(transform, pacMan.transform.position.x, pacMan.transform.position.y + 4);
+                                    }
+                                    if (pacMan.GetComponent<Movement>()._dir == Movement.Direction.left)
+                                    {
+                                        move._dir = move.pathFind(transform, pacMan.transform.position.x - 4, pacMan.transform.position.y);
+                                    }
+                                    if (pacMan.GetComponent<Movement>()._dir == Movement.Direction.right)
+                                    {
+                                        move._dir = move.pathFind(transform, pacMan.transform.position.x + 4, pacMan.transform.position.y);
+                                    }
+                                    if (pacMan.GetComponent<Movement>()._dir == Movement.Direction.down)
+                                    {
+                                        move._dir = move.pathFind(transform, pacMan.transform.position.x, pacMan.transform.position.y - 4);
+                                    }
+                                }
+
                             }
 
                         }
-                    } else
-                    {
-                        if (move._dir == Movement.Direction.still)
+                        // Inky behavior (double vector between blinky and pacman)
+                        if (ghostID == 3)
                         {
-                            move._dir = move.pathFind(transform, 1, -29);
+                            if (move._dir == Movement.Direction.still)
+                            {
+                                if (pacMan.GetComponent<Movement>()._dir == Movement.Direction.up)
+                                {
+                                    move._dir = move.pathFind(transform, (pacMan.transform.position.x - blinky.transform.position.x) * 2, (pacMan.transform.position.y + 4 - blinky.transform.position.y) * 2);
+                                }
+                                if (pacMan.GetComponent<Movement>()._dir == Movement.Direction.left)
+                                {
+                                    move._dir = move.pathFind(transform, (pacMan.transform.position.x - 4 - blinky.transform.position.x) * 2, (pacMan.transform.position.y - blinky.transform.position.y) * 2);
+                                }
+                                if (pacMan.GetComponent<Movement>()._dir == Movement.Direction.right)
+                                {
+                                    move._dir = move.pathFind(transform, (pacMan.transform.position.x + 4 - blinky.transform.position.x) * 2, (pacMan.transform.position.y - blinky.transform.position.y) * 2);
+                                }
+                                if (pacMan.GetComponent<Movement>()._dir == Movement.Direction.down)
+                                {
+                                    move._dir = move.pathFind(transform, (pacMan.transform.position.x - blinky.transform.position.x) * 2, (pacMan.transform.position.y - 4 - blinky.transform.position.y) * 2);
+                                }
+                            }
+                            else
+                            {
+                                if (move.graph.onNode(transform))
+                                {
+                                    if (pacMan.GetComponent<Movement>()._dir == Movement.Direction.up)
+                                    {
+                                        move._dir = move.pathFind(transform, (pacMan.transform.position.x - blinky.transform.position.x) * 2, (pacMan.transform.position.y + 4 - blinky.transform.position.y) * 2);
+                                    }
+                                    if (pacMan.GetComponent<Movement>()._dir == Movement.Direction.left)
+                                    {
+                                        move._dir = move.pathFind(transform, (pacMan.transform.position.x - 4 - blinky.transform.position.x) * 2, (pacMan.transform.position.y - blinky.transform.position.y) * 2);
+                                    }
+                                    if (pacMan.GetComponent<Movement>()._dir == Movement.Direction.right)
+                                    {
+                                        move._dir = move.pathFind(transform, (pacMan.transform.position.x + 4 - blinky.transform.position.x) * 2, (pacMan.transform.position.y - blinky.transform.position.y) * 2);
+                                    }
+                                    if (pacMan.GetComponent<Movement>()._dir == Movement.Direction.down)
+                                    {
+                                        move._dir = move.pathFind(transform, (pacMan.transform.position.x - blinky.transform.position.x) * 2, (pacMan.transform.position.y - 4 - blinky.transform.position.y) * 2);
+                                    }
+                                }
+                            }
+                        }
+                        // Clide behavior (run at pacman, then run to the bottom of the screen)
+                        if (ghostID == 4)
+                        {
+                            if (Vector3.Distance(transform.position, pacMan.transform.position) > 8) {
+                                if (move._dir == Movement.Direction.still)
+                                {
+                                    move._dir = move.pathFind(transform, pacMan.transform.position.x, pacMan.transform.position.y);
+                                }
+                                else
+                                {
+                                    if (move.graph.onNode(transform))
+                                    {
+                                        move._dir = move.pathFind(transform, pacMan.transform.position.x, pacMan.transform.position.y);
+                                        recalculate = 0;
+                                    }
+
+                                }
+                            } else
+                            {
+                                if (move._dir == Movement.Direction.still)
+                                {
+                                    move._dir = move.pathFind(transform, 1, -29);
+                                }
+                                else
+                                {
+                                    if (move.graph.onNode(transform))
+                                    {
+                                        move._dir = move.pathFind(transform, 1, -29);
+                                        recalculate = 0;
+                                    }
+
+                                }
+                            }
+                        }
+
+
+                        // etc.
+
+                        break;
+
+                    case State.entering:
+
+                        // Leaving this code in here for you.
+                        move._dir = Movement.Direction.still;
+
+                        if (transform.position.x < 13.48f || transform.position.x > 13.52) {
+                            //print ("GOING LEFT OR RIGHT");
+                            transform.position = Vector3.Lerp(transform.position, new Vector3(13.5f, transform.position.y, transform.position.z), 3f * Time.deltaTime);
+                        } else if (transform.position.y > -13.99f || transform.position.y < -14.01f) {
+                            gameObject.GetComponent<Animator>().SetInteger("Direction", 2);
+                            transform.position = Vector3.Lerp(transform.position, new Vector3(transform.position.x, -14f, transform.position.z), 3f * Time.deltaTime);
+                        } else {
+                            fleeing = false;
+                            dead = false;
+                            gameObject.GetComponent<Animator>().SetBool("Running", true);
+                            _state = State.waiting;
+                        }
+
+                        break;
+                }
+                break;
+                /*
+                 * Attempted to implement scatter but it didn't work
+                 *  second algorithm tries to push the versatility of the dijkstras algorithm
+                 *  but it seems that more bugs need to fixed, perhaps making the graph more robust might help with our implementation
+                 *  Scattering algorithm ended up being too buggy to use, but this custom algorithm tries to figure out if flanking with
+                 *  four ghosts, while being chases by one is a good strategy
+                 */ 
+            case (CUSTOM):
+                if (fleeing)//If fleeing (handled by pelletCollision.cs)
+                    _state = State.scatter;
+                switch (_state)
+                {
+                    case (State.waiting):
+
+                        // below is some sample code showing how you deal with animations, etc.
+                        move._dir = Movement.Direction.still;
+                        if (releaseTime <= 0f)
+                        {
+                            gameObject.GetComponent<Animator>().SetBool("Dead", false);
+                            gameObject.GetComponent<Animator>().SetBool("Running", false);
+                            gameObject.GetComponent<Animator>().SetInteger("Direction", 0);
+                            gameObject.GetComponent<Movement>().MSpeed = 5f;
+
+                            if (firstWait)
+                            {
+                                Debug.Log("First");
+                               // _state = State.scatter;
+                            }
+                            else
+                            {
+                                _state = State.leaving;
+                            }
+
+                            // etc.
+                        }
+
+                        releaseTime -= Time.deltaTime;
+                        // etc.
+                        break;
+
+                    case (State.scatter):
+                        if (fleeing || firstWait)
+                        {
+                            switch (ghostID)
+                            {
+                                case (1): //Blinky
+                                    move._dir = move.pathFind(transform, 1, -1);
+                                    if ((transform.position.x - 1 >= 0 && transform.position.x - 1 <= 0.3f) &&
+                                        (transform.position.y - -1 >= 0 && transform.position.x - -1 <= 0.3f))
+                                        firstWait = false;
+                                    break;
+                                case (2): //Pinky
+                                    move._dir = move.pathFind(transform, 26, -1);
+                                    if ((transform.position.x - 26 >= 0 && transform.position.x - 26 <= 0.3f) &&
+                                        (transform.position.y - -1 >= 0 && transform.position.x - -1 <= 0.3f))
+                                            firstWait = false;
+                                        break;
+                                case (3): //Inky 
+                                    move._dir = move.pathFind(transform, 26, -28);
+                                    if ((transform.position.x - 26 >= 0 && transform.position.x - 26 <= 0.3f) &&
+                                        (transform.position.y - -28 >= 0 && transform.position.x - -28 <= 0.3f))
+                                        firstWait = false;
+                                        break;
+                                case (4): //Clyde
+                                    move._dir = move.pathFind(transform, 1, -28);
+                                    if ((transform.position.x - 1 >= 0 && transform.position.x - 1 <= 0.3f) &&
+                                       (transform.position.y - -28 > -1 && transform.position.x - -28 <= 0.3f))
+                                        firstWait = false;
+                                        break;
+                            }
+                        }
+                        if (!fleeing || !firstWait)
+                        {
+                            _state = State.leaving;
+                        }
+                        break;
+                    case (State.leaving):
+                        transform.position = new Vector3(13.5f, -11f, 2f);
+                        _state = State.active;
+
+                        break;
+
+                    case (State.active):
+                        if (dead)
+                        {
+
+                            // etc.
+                            // most of your AI code will be placed here
+                            _state = State.entering;
+                        }
+                        if (pacMan.gameObject == null)
+                        {
+                            pacMan = GameObject.Find("PacMan(Clone)") ? GameObject.Find("PacMan(Clone)") : GameObject.Find("PacMan 1(Clone)");
+                        }
+                        if (blinky.gameObject == null)
+                        {
+                            blinky = GameObject.Find("Blinky(Clone)");
+                        }
+                        // Blinky Behavior (Chase the player)
+                        if (ghostID == 1)
+                        {
+                            if (move._dir == Movement.Direction.still)
+                            {
+                                move._dir = move.pathFind(transform, pacMan.transform.position.x, pacMan.transform.position.y);
+                            }
+                            else
+                            {
+                                if (move.graph.onNode(transform))
+                                {
+                                    move._dir = move.pathFind(transform, pacMan.transform.position.x, pacMan.transform.position.y);
+                                    recalculate = 0;
+                                }
+
+                            }
+                        }
+
+                        // Pinky Behavior (Look in front of player)
+                        if (ghostID == 2)
+                        {
+                            if (move._dir == Movement.Direction.still)
+                            {
+                                if (pacMan.GetComponent<Movement>()._dir == Movement.Direction.up)
+                                {
+                                    move._dir = move.pathFind(transform, pacMan.transform.position.x, pacMan.transform.position.y + 4);
+                                }
+                                if (pacMan.GetComponent<Movement>()._dir == Movement.Direction.left)
+                                {
+                                    move._dir = move.pathFind(transform, pacMan.transform.position.x - 4, pacMan.transform.position.y);
+                                }
+                                if (pacMan.GetComponent<Movement>()._dir == Movement.Direction.right)
+                                {
+                                    move._dir = move.pathFind(transform, pacMan.transform.position.x + 4, pacMan.transform.position.y);
+                                }
+                                if (pacMan.GetComponent<Movement>()._dir == Movement.Direction.down)
+                                {
+                                    move._dir = move.pathFind(transform, pacMan.transform.position.x, pacMan.transform.position.y - 4);
+                                }
+                            }
+                            else
+                            {
+                                if (move.graph.onNode(transform))
+                                {
+                                    if (pacMan.GetComponent<Movement>()._dir == Movement.Direction.up)
+                                    {
+                                        move._dir = move.pathFind(transform, pacMan.transform.position.x, pacMan.transform.position.y + 4);
+                                    }
+                                    if (pacMan.GetComponent<Movement>()._dir == Movement.Direction.left)
+                                    {
+                                        move._dir = move.pathFind(transform, pacMan.transform.position.x - 4, pacMan.transform.position.y);
+                                    }
+                                    if (pacMan.GetComponent<Movement>()._dir == Movement.Direction.right)
+                                    {
+                                        move._dir = move.pathFind(transform, pacMan.transform.position.x + 4, pacMan.transform.position.y);
+                                    }
+                                    if (pacMan.GetComponent<Movement>()._dir == Movement.Direction.down)
+                                    {
+                                        move._dir = move.pathFind(transform, pacMan.transform.position.x, pacMan.transform.position.y - 4);
+                                    }
+                                }
+
+                            }
+
+                        }
+                        // Inky behavior Flanking to the right
+                        if (ghostID == 3)
+                        {
+                            if (move._dir == Movement.Direction.still)
+                            {
+                                if (pacMan.GetComponent<Movement>()._dir == Movement.Direction.up)
+                                {
+                                    move._dir = move.pathFind(transform, pacMan.transform.position.x - 1, pacMan.transform.position.y + 1); //Flank on the diagonal 
+                                }
+                                if (pacMan.GetComponent<Movement>()._dir == Movement.Direction.left)
+                                {
+                                    move._dir = move.pathFind(transform, pacMan.transform.position.x + 1, pacMan.transform.position.y);
+                                }
+                                if (pacMan.GetComponent<Movement>()._dir == Movement.Direction.right)
+                                {
+                                    move._dir = move.pathFind(transform, pacMan.transform.position.x - 1, pacMan.transform.position.y);
+                                }
+                                if (pacMan.GetComponent<Movement>()._dir == Movement.Direction.down)
+                                {
+                                    move._dir = move.pathFind(transform, pacMan.transform.position.x - 1, pacMan.transform.position.y -1);
+                                }
+                            }
+                            else
+                            {
+                                if (move.graph.onNode(transform))
+                                {
+                                    if (pacMan.GetComponent<Movement>()._dir == Movement.Direction.up)
+                                    {
+                                        move._dir = move.pathFind(transform, pacMan.transform.position.x, pacMan.transform.position.y + 4);
+                                    }
+                                    if (pacMan.GetComponent<Movement>()._dir == Movement.Direction.left)
+                                    {
+                                        move._dir = move.pathFind(transform, pacMan.transform.position.x - 4, pacMan.transform.position.y);
+                                    }
+                                    if (pacMan.GetComponent<Movement>()._dir == Movement.Direction.right)
+                                    {
+                                        move._dir = move.pathFind(transform, pacMan.transform.position.x + 4, pacMan.transform.position.y);
+                                    }
+                                    if (pacMan.GetComponent<Movement>()._dir == Movement.Direction.down)
+                                    {
+                                        move._dir = move.pathFind(transform, pacMan.transform.position.x, pacMan.transform.position.y - 4);
+                                    }
+                                }
+
+                            }
+                        }
+                        // Clide behavior flank to the right
+                        if (ghostID == 4)
+                        {
+                            if (move._dir == Movement.Direction.still)
+                            {
+                                if (pacMan.GetComponent<Movement>()._dir == Movement.Direction.up)
+                                {
+                                    move._dir = move.pathFind(transform, pacMan.transform.position.x + 1, pacMan.transform.position.y + 1); //Flank on the diagonal 
+                                }
+                                if (pacMan.GetComponent<Movement>()._dir == Movement.Direction.left)
+                                {
+                                    move._dir = move.pathFind(transform, pacMan.transform.position.x - 1, pacMan.transform.position.y);
+                                }
+                                if (pacMan.GetComponent<Movement>()._dir == Movement.Direction.right)
+                                {
+                                    move._dir = move.pathFind(transform, pacMan.transform.position.x + 1, pacMan.transform.position.y);
+                                }
+                                if (pacMan.GetComponent<Movement>()._dir == Movement.Direction.down)
+                                {
+                                    move._dir = move.pathFind(transform, pacMan.transform.position.x + 1, pacMan.transform.position.y - 1);
+                                }
+                            }
+                            else
+                            {
+                                if (move.graph.onNode(transform))
+                                {
+                                    if (pacMan.GetComponent<Movement>()._dir == Movement.Direction.up)
+                                    {
+                                        move._dir = move.pathFind(transform, pacMan.transform.position.x, pacMan.transform.position.y + 4);
+                                    }
+                                    if (pacMan.GetComponent<Movement>()._dir == Movement.Direction.left)
+                                    {
+                                        move._dir = move.pathFind(transform, pacMan.transform.position.x - 4, pacMan.transform.position.y);
+                                    }
+                                    if (pacMan.GetComponent<Movement>()._dir == Movement.Direction.right)
+                                    {
+                                        move._dir = move.pathFind(transform, pacMan.transform.position.x + 4, pacMan.transform.position.y);
+                                    }
+                                    if (pacMan.GetComponent<Movement>()._dir == Movement.Direction.down)
+                                    {
+                                        move._dir = move.pathFind(transform, pacMan.transform.position.x, pacMan.transform.position.y - 4);
+                                    }
+                                }
+
+                            }
+                        }
+
+
+                        // etc.
+
+                        break;
+
+                    case State.entering:
+
+                        // Leaving this code in here for you.
+                        move._dir = Movement.Direction.still;
+
+                        if (transform.position.x < 13.48f || transform.position.x > 13.52)
+                        {
+                            //print ("GOING LEFT OR RIGHT");
+                            transform.position = Vector3.Lerp(transform.position, new Vector3(13.5f, transform.position.y, transform.position.z), 3f * Time.deltaTime);
+                        }
+                        else if (transform.position.y > -13.99f || transform.position.y < -14.01f)
+                        {
+                            gameObject.GetComponent<Animator>().SetInteger("Direction", 2);
+                            transform.position = Vector3.Lerp(transform.position, new Vector3(transform.position.x, -14f, transform.position.z), 3f * Time.deltaTime);
                         }
                         else
                         {
-                            if (move.graph.onNode(transform))
-                            {
-                                move._dir = move.pathFind(transform, 1, -29);
-                                recalculate = 0;
-                            }
-
+                            fleeing = false;
+                            dead = false;
+                            gameObject.GetComponent<Animator>().SetBool("Running", true);
+                            _state = State.waiting;
                         }
-                    }
+
+                        break;
                 }
-
-
-                    // etc.
-
-                    break;
-
-		case State.entering:
-
-            // Leaving this code in here for you.
-			move._dir = Movement.Direction.still;
-
-			if (transform.position.x < 13.48f || transform.position.x > 13.52) {
-				//print ("GOING LEFT OR RIGHT");
-				transform.position = Vector3.Lerp (transform.position, new Vector3 (13.5f, transform.position.y, transform.position.z), 3f * Time.deltaTime);
-			} else if (transform.position.y > -13.99f || transform.position.y < -14.01f) {
-				gameObject.GetComponent<Animator>().SetInteger ("Direction", 2);
-				transform.position = Vector3.Lerp (transform.position, new Vector3 (transform.position.x, -14f, transform.position.z), 3f * Time.deltaTime);
-			} else {
-				fleeing = false;
-				dead = false;
-				gameObject.GetComponent<Animator>().SetBool("Running", true);
-				_state = State.waiting;
-			}
-
-            break;
-		}
+                break;
+        }
 	}
 
     // Utility routines
